@@ -1,6 +1,7 @@
 package it.sosinski.channel;
 
 import it.sosinski.chatworker.ChatWorker;
+import it.sosinski.history.HistoryService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,11 @@ public class Channel {
         lock.readLock().unlock();
     }
 
+    public void saveMessage(String login, String text) {
+        String message = String.format("%s : %s", login, text);
+        HistoryService.saveMessageToTxtFile(message, this);
+    }
+
     public boolean isAllowed(ChatWorker chatWorker) {
         lock.readLock().lock();
         boolean allowed = allowedChatWorkers.contains(chatWorker);
@@ -53,16 +59,16 @@ public class Channel {
         return isPrivate;
     }
 
+    public String getName() {
+        return name;
+    }
+
     List<ChatWorker> getLoggedChatWorkers() {
         return loggedChatWorkers;
     }
 
     void connectUser(ChatWorker chatWorker) {
         loggedChatWorkers.add(chatWorker);
-    }
-
-    String getName() {
-        return name;
     }
 
     @Override

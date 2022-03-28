@@ -48,6 +48,7 @@ public class ChatWorker implements Runnable {
         } else {
             if (currentChannel != null) {
                 currentChannel.sendMessageToUsers(login, text);
+                currentChannel.saveMessage(login, text);
             } else {
                 this.sendServerMsg("You need to connect a channel");
             }
