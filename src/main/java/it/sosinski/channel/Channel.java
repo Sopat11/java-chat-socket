@@ -2,6 +2,8 @@ package it.sosinski.channel;
 
 import it.sosinski.chatworker.ChatWorker;
 import it.sosinski.history.HistoryService;
+import it.sosinski.messages.Message;
+import it.sosinski.messages.MessageType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +37,7 @@ public class Channel {
 
     public void sendMessageToUsers(String fromLogin, String text) {
         lock.readLock().lock();
-        loggedChatWorkers.forEach(chatWorker -> chatWorker.sendMsg(fromLogin, text));
+        loggedChatWorkers.forEach(chatWorker -> chatWorker.sendMsg(new Message(MessageType.TEXT, text, fromLogin)));
         lock.readLock().unlock();
     }
 

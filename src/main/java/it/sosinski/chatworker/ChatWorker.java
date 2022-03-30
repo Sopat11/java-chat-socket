@@ -3,8 +3,7 @@ package it.sosinski.chatworker;
 import it.sosinski.channel.Channel;
 import it.sosinski.manager.MainCommands;
 import it.sosinski.manager.ManagerService;
-import it.sosinski.messages.MessageReader;
-import it.sosinski.messages.MessageWriter;
+import it.sosinski.messages.*;
 import lombok.extern.java.Log;
 
 import java.io.IOException;
@@ -16,28 +15,29 @@ public class ChatWorker implements Runnable {
 
     private final Socket socket;
     private final ChatWorkers chatWorkers;
-    private final MessageWriter writer;
-    private final MessageReader reader;
+    private final MessageWriter messageWriter;
     private final ManagerService managerService;
-    private final String login;
+    private String login = "Login"; // TODO: Zaimplementować
     private Channel currentChannel;
 
-    public ChatWorker(Socket socket, ChatWorkers chatWorkers, ManagerService managerService, String login) {
+    public ChatWorker(Socket socket, ChatWorkers chatWorkers, ManagerService managerService) {
         this.socket = socket;
+
         this.chatWorkers = chatWorkers;
         this.managerService = managerService;
-        this.login = login;
-        this.reader = new MessageReader(socket, this::onText, () -> chatWorkers.remove(this));
-        this.writer = new MessageWriter(socket);
-        this.writer.write("Wyświetlenie dostępnych komend: \\\\h");
+
+        this.messageWriter = new MessageWriter(socket);
     }
 
     @Override
     public void run() {
-        reader.read();
+        this.messageWriter.writeMessage("Print available commands: \\\\h", "Server");
+        new MessageReader(socket, this::onMessage, () -> chatWorkers.remove(this)).read();
     }
 
-    private void onText(String text) {
+    private void onMessage(Message message) {
+        log.log(Level.INFO, "onMessage" + message);
+        String text = message.getText().trim();
         //Zamknięcie aplikacji
         if (isExitCommand(text)) {
             leaveCurrentChannel();
@@ -55,12 +55,12 @@ public class ChatWorker implements Runnable {
         }
     }
 
-    public void sendMsg(String fromLogin, String text) {
-        writer.write(fromLogin + ": " + text);
+    public void sendMsg(Message message) {
+        messageWriter.writeMessage(message.getLogin() + ": " + message.getText(), message.getLogin());
     }
 
     public void sendServerMsg(String text) {
-        writer.write(text);
+        messageWriter.writeMessage(text, "Server");
     }
 
     public Channel getCurrentChannel() {

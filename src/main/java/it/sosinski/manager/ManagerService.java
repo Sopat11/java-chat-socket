@@ -2,7 +2,11 @@ package it.sosinski.manager;
 
 import it.sosinski.channel.ChannelService;
 import it.sosinski.chatworker.ChatWorker;
+import lombok.extern.java.Log;
 
+import java.util.logging.Level;
+
+@Log
 public class ManagerService {
 
     private final ChannelService channelService;
@@ -12,6 +16,7 @@ public class ManagerService {
     }
 
     public void process(ChatWorker chatWorker, String text) {
+        log.log(Level.INFO, "Started processing request in ManagerService");
         if (asksForGeneralHelp(text)) {
             HelpService.printAvailableCommands(chatWorker);
         } else if (asksForChannelHelp(text)) {

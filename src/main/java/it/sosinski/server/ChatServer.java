@@ -44,8 +44,7 @@ public class ChatServer {
             log.log(Level.INFO, "New connection established...");
 
             new Thread( () -> {
-                String login = connectionService.connectNewChatWorker(socket);
-                ChatWorker chatWorker = new ChatWorker(socket, chatWorkers, managerService, login);
+                ChatWorker chatWorker = new ChatWorker(socket, chatWorkers, managerService);
                 chatWorkers.add(chatWorker);
                 executorService.execute(chatWorker);
             }).start();

@@ -1,6 +1,7 @@
 package it.sosinski.client;
 
 import it.sosinski.handler.GlobalExceptionHandler;
+import it.sosinski.messages.ConsoleReader;
 import it.sosinski.messages.MessageReader;
 import it.sosinski.messages.MessageWriter;
 import lombok.extern.java.Log;
@@ -15,13 +16,17 @@ public class ChatClient {
     private final Consumer<String> onText;
     private final Runnable readFromSocket;
     private final Runnable readFromConsole;
+    private final MessageWriter messageWriter;
 
     public ChatClient(String host, int port) throws IOException {
         Socket socket = new Socket(host, port);
-        onText = text -> new MessageWriter(socket).write(text);
-        readFromSocket = () -> new MessageReader(socket, System.out::println, () -> {
+
+        messageWriter = new MessageWriter(socket);
+        onText = message -> messageWriter.writeMessage(message, "Server");
+        readFromSocket =  () -> new MessageReader(socket, x -> System.out.println(x.getText()), () -> {
         }).read();
-        readFromConsole = () -> new MessageReader(System.in, onText).read();
+
+        readFromConsole = () -> new ConsoleReader(System.in, onText).read();
     }
 
     public static void main(String[] args) throws IOException {

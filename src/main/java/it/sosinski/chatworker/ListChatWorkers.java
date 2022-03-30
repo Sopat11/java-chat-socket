@@ -1,5 +1,8 @@
 package it.sosinski.chatworker;
 
+import it.sosinski.messages.Message;
+import it.sosinski.messages.MessageType;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +24,7 @@ public class ListChatWorkers implements ChatWorkers {
 
     @Override
     public void broadcast(String fromLogin, String text) {
-        chatWorkers.forEach(chatWorker -> chatWorker.sendMsg(fromLogin, text));
+        chatWorkers.forEach(chatWorker -> chatWorker.sendMsg(new Message(MessageType.TEXT, text, fromLogin)));
     }
 
     @Override

@@ -2,10 +2,8 @@ package it.sosinski.messages;
 
 import lombok.extern.java.Log;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -13,33 +11,31 @@ import java.util.logging.Level;
 @Log
 public class MessageReader {
 
-    private final Consumer<String> onText;
-    private BufferedReader reader;
+    private Consumer<Message> onMessage;
     private Runnable onClose;
+    private ObjectInputStream ois;
+    private Socket socket;
 
-    public MessageReader(InputStream inputStream, Consumer<String> onText) {
-        this.onText = onText;
-        reader = new BufferedReader(new InputStreamReader(inputStream));
-    }
-
-    public MessageReader(Socket socket, Consumer<String> onText, Runnable onClose) {
-        this.onText = onText;
+    public MessageReader(Socket socket, Consumer<Message> onMessage, Runnable onClose) {
+        this.onMessage = onMessage;
         this.onClose = onClose;
-        try {
-            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "Creating input stream failed: " + e.getMessage());
-        }
+        this.socket = socket;
     }
 
     public void read() {
-        String text;
         try {
-            while ((text = reader.readLine()) != null) {
-                onText.accept(text);
+            ois = new ObjectInputStream(socket.getInputStream());
+            while (true) {
+
+                Object object = ois.readObject();
+                Message message = (Message) object;
+                onMessage.accept(message);
             }
+        } catch (ClassNotFoundException e) {
+            log.log(Level.SEVERE, "Reading input stream failed: " + e.getMessage());
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Read message failed: " + e.getMessage());
+            log.log(Level.SEVERE, "Creating input stream failed: " + e.getMessage());
+            e.printStackTrace();
         } finally {
             if (onClose != null) {
                 onClose.run();
