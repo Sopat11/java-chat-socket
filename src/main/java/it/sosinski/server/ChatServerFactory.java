@@ -1,7 +1,6 @@
 package it.sosinski.server;
 
 import it.sosinski.chatworker.ChatWorkers;
-import it.sosinski.login.ConnectionService;
 import it.sosinski.login.LoginService;
 import it.sosinski.manager.ManagerService;
 
@@ -14,8 +13,6 @@ public interface ChatServerFactory {
     ExecutorService createExecutorService();
 
     ManagerService createManagerService(LoginService loginService);
-
-    ConnectionService createConnectionService(LoginService loginService);
 
     LoginService createLoginService(ChatWorkers chatWorkers);
 }

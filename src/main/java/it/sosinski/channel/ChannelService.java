@@ -96,7 +96,7 @@ public class ChannelService {
         Channel currentChannel = chatWorker.getCurrentChannel();
         String login = getTextFromParentheses(text);
 
-        if (!loginService.isLoginTaken(login)) {
+        if (!loginService.isLoginFree(login)) {
             chatWorker.sendServerMsg("User with given login doesn't exist");
             return;
         }

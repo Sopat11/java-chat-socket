@@ -2,6 +2,7 @@ package it.sosinski.messages;
 
 import lombok.extern.java.Log;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
@@ -31,11 +32,10 @@ public class MessageReader {
                 Message message = (Message) object;
                 onMessage.accept(message);
             }
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | EOFException e) {
             log.log(Level.SEVERE, "Reading input stream failed: " + e.getMessage());
         } catch (IOException e) {
             log.log(Level.SEVERE, "Creating input stream failed: " + e.getMessage());
-            e.printStackTrace();
         } finally {
             if (onClose != null) {
                 onClose.run();

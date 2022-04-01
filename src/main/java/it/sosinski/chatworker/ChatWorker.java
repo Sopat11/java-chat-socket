@@ -17,7 +17,7 @@ public class ChatWorker implements Runnable {
     private final ChatWorkers chatWorkers;
     private final MessageWriter messageWriter;
     private final ManagerService managerService;
-    private String login = "Login"; // TODO: Zaimplementować
+    private String login;
     private Channel currentChannel;
 
     public ChatWorker(Socket socket, ChatWorkers chatWorkers, ManagerService managerService) {
@@ -31,28 +31,35 @@ public class ChatWorker implements Runnable {
 
     @Override
     public void run() {
-        this.messageWriter.writeMessage("Print available commands: \\\\h", "Server");
+        this.messageWriter.writeMessage("Type your login", "Server");
         new MessageReader(socket, this::onMessage, () -> chatWorkers.remove(this)).read();
     }
 
     private void onMessage(Message message) {
-        log.log(Level.INFO, "onMessage" + message);
-        String text = message.getText().trim();
-        //Zamknięcie aplikacji
-        if (isExitCommand(text)) {
-            leaveCurrentChannel();
-            closeSocket();
-            //Przejście do managera komend
-        } else if (isServerCommand(text.trim())) {
-            managerService.process(this, text);
+        if (login == null) {
+            login(message.getText());
         } else {
-            if (currentChannel != null) {
-                currentChannel.sendMessageToUsers(login, text);
-                currentChannel.saveMessage(login, text);
+            String text = message.getText().trim();
+            //Zamknięcie aplikacji
+            if (isExitCommand(text)) {
+                leaveCurrentChannel();
+                closeSocket();
+                //Przejście do managera komend
+            } else if (isServerCommand(text.trim())) {
+                managerService.process(this, text);
             } else {
-                this.sendServerMsg("You need to connect a channel");
+                if (currentChannel != null) {
+                    currentChannel.sendMessageToUsers(login, text);
+                    currentChannel.saveMessage(login, text);
+                } else {
+                    this.sendServerMsg("You need to connect a channel");
+                }
             }
         }
+    }
+
+    private void login(String login) {
+        this.login = managerService.login(this, login);
     }
 
     public void sendMsg(Message message) {

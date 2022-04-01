@@ -11,11 +11,36 @@ public class LoginService {
         this.chatWorkers = chatWorkers;
     }
 
-    public boolean isLoginTaken(String login) {
-        return !chatWorkers.isLoginFree(login);
+    public String readChatWorkerLogin(ChatWorker chatWorker, String login) {
+
+            boolean isFree;
+            boolean isCorrect;
+
+            isFree = isLoginFree(login);
+            isCorrect = isLoginCorrect(login);
+
+            if (!isFree) {
+                chatWorker.sendServerMsg("Unfortunately this login is taken. Choose another one.");
+                return null;
+            } else if (!isCorrect) {
+                chatWorker.sendServerMsg("Login can't start with \\. Choose another one.");
+                return null;
+            }
+            chatWorker.sendServerMsg("Successfully logged in");
+
+        return login;
+    }
+
+    public boolean isLoginFree(String login) {
+        return chatWorkers.isLoginFree(login);
     }
 
     public ChatWorker getChatWorkerByLogin(String login) {
         return chatWorkers.getByLogin(login);
     }
+
+    private boolean isLoginCorrect(String login) {
+        return !login.trim().startsWith("\\");
+    }
+
 }

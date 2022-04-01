@@ -31,7 +31,7 @@ public class ListChatWorkers implements ChatWorkers {
     public boolean isLoginFree(String login) {
         return chatWorkers.stream()
                 .map(ChatWorker::getLogin)
-                .filter(x -> x.equals(login))
+                .filter(x -> x != null && x.equals(login))
                 .findFirst()
                 .isEmpty();
     }

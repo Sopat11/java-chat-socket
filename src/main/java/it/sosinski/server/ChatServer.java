@@ -2,7 +2,6 @@ package it.sosinski.server;
 
 import it.sosinski.chatworker.ChatWorker;
 import it.sosinski.chatworker.ChatWorkers;
-import it.sosinski.login.ConnectionService;
 import it.sosinski.login.LoginService;
 import it.sosinski.manager.ManagerService;
 import lombok.extern.java.Log;
@@ -21,7 +20,6 @@ public class ChatServer {
     private final ExecutorService executorService = factory.createExecutorService();
     private final LoginService loginService = factory.createLoginService(chatWorkers);
     private final ManagerService managerService = factory.createManagerService(loginService);
-    private final ConnectionService connectionService = factory.createConnectionService(loginService);
 
     public static void main(String[] args) {
         int port = Integer.parseInt(args[0]);
