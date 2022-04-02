@@ -1,5 +1,10 @@
 package it.sosinski.manager;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@AllArgsConstructor
+@Getter
 public enum MainCommands {
 
     HELP("display available commands", "\\\\h"),
@@ -8,15 +13,6 @@ public enum MainCommands {
 
     private final String description;
     private final String code;
-
-    MainCommands(String description, String code) {
-        this.description = description;
-        this.code = code;
-    }
-
-    public String getCode() {
-        return code;
-    }
 
     @Override
     public String toString() {

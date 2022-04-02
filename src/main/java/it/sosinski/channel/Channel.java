@@ -3,6 +3,7 @@ package it.sosinski.channel;
 import it.sosinski.chatworker.ChatWorker;
 import it.sosinski.history.HistoryService;
 import it.sosinski.messages.Message;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +15,10 @@ public class Channel {
     private final List<ChatWorker> loggedChatWorkers = new ArrayList<>();
     private final List<ChatWorker> allowedChatWorkers = new ArrayList<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    @Getter
     private final String name;
-    private final Boolean isPrivate;
+    @Getter
+    private final boolean isPrivate;
 
     Channel(ChatWorker chatWorker, String name, Boolean isPrivate) {
         this.name = name;
@@ -54,14 +57,6 @@ public class Channel {
 
     public void allow(ChatWorker chatWorker) {
         allowedChatWorkers.add(chatWorker);
-    }
-
-    public boolean isPrivate() {
-        return isPrivate;
-    }
-
-    public String getName() {
-        return name;
     }
 
     List<ChatWorker> getLoggedChatWorkers() {

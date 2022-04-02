@@ -1,7 +1,10 @@
 package it.sosinski.client;
 
+import it.sosinski.files.FileService;
 import it.sosinski.handler.GlobalExceptionHandler;
 import it.sosinski.messages.*;
+import it.sosinski.utils.CommandUtils;
+import it.sosinski.utils.TextUtils;
 import lombok.extern.java.Log;
 
 import java.io.IOException;
@@ -40,11 +43,10 @@ public class ChatClient {
     }
 
     private void writeMessage(String text) {
-        if (!isFileSending(text)) {
-            messageWriter.writeTextMessage(text, "Server2");
+        if (CommandUtils.isFileSending(text)) {
+            messageWriter.writeFileMessage(TextUtils.getTextFromParentheses(text), "Server");
         } else {
-            System.out.println("Writing file message");
-            messageWriter.writeFileMessage(getPathFromText(text), "Server");
+            messageWriter.writeServerMessage(text);
         }
     }
 
@@ -52,15 +54,10 @@ public class ChatClient {
         if (message.getMessageType() == MessageType.TEXT) {
             System.out.println(message.getText());
         } else {
-            System.out.println("FILE RECEIVED");
+            System.out.println(message.getLogin() + " sent a file: " + message.getFileName());
+            FileService.decodeFile(message);
         }
     }
 
-    private boolean isFileSending(String text) {
-        return text.trim().startsWith("\\\\f");
-    }
 
-    private String getPathFromText(String text) {
-        return text.substring(text.indexOf("\"") + 1, text.lastIndexOf("\""));
-    }
 }

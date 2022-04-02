@@ -12,10 +12,9 @@ import java.util.logging.Level;
 @Log
 public class MessageReader {
 
-    private Consumer<Message> onMessage;
-    private Runnable onClose;
-    private ObjectInputStream ois;
-    private Socket socket;
+    private final Consumer<Message> onMessage;
+    private final Runnable onClose;
+    private final Socket socket;
 
     public MessageReader(Socket socket, Consumer<Message> onMessage, Runnable onClose) {
         this.onMessage = onMessage;
@@ -25,7 +24,7 @@ public class MessageReader {
 
     public void read() {
         try {
-            ois = new ObjectInputStream(socket.getInputStream());
+            ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
             while (true) {
 
                 Object object = ois.readObject();

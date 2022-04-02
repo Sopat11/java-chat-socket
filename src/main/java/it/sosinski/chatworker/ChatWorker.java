@@ -1,13 +1,15 @@
 package it.sosinski.chatworker;
 
 import it.sosinski.channel.Channel;
-import it.sosinski.files.FileService;
-import it.sosinski.manager.MainCommands;
 import it.sosinski.manager.ManagerService;
 import it.sosinski.messages.Message;
 import it.sosinski.messages.MessageReader;
 import it.sosinski.messages.MessageType;
 import it.sosinski.messages.MessageWriter;
+import it.sosinski.utils.CommandUtils;
+import it.sosinski.utils.TextUtils;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.java.Log;
 
 import java.io.IOException;
@@ -21,7 +23,10 @@ public class ChatWorker implements Runnable {
     private final ChatWorkers chatWorkers;
     private final MessageWriter messageWriter;
     private final ManagerService managerService;
+    @Getter
     private String login;
+    @Getter
+    @Setter
     private Channel currentChannel;
 
     public ChatWorker(Socket socket, ChatWorkers chatWorkers, ManagerService managerService) {
@@ -35,32 +40,33 @@ public class ChatWorker implements Runnable {
 
     @Override
     public void run() {
-        this.messageWriter.writeTextMessage("Type your login", "Server");
+        this.messageWriter.writeServerMessage("Type your login");
         new MessageReader(socket, this::onMessage, () -> chatWorkers.remove(this)).read();
     }
 
     private void onMessage(Message message) {
+
+        // Czytanie loginu aż do powodzenia
         if (login == null) {
-            login(getTrimmedTextFromMessage(message));
+            login(TextUtils.getTrimmedText(message));
+
         } else {
-            //Zamknięcie aplikacji
-            if (isExitCommand(getTrimmedTextFromMessage(message))) {
+
+            //Wysłanie wiadomości do użytkowników na kanale
+            if (!CommandUtils.isServerCommand(message.getText())) {
+                sendMessageToChannel(message);
+                saveMessageIfNotAFile(message);
+            }
+
+            // Zamknięcie aplikacji
+            else if (CommandUtils.isExitCommand(TextUtils.getTrimmedText(message))) {
                 leaveCurrentChannel();
                 closeSocket();
+            }
 
-                //Przejście do managera komend
-            } else if (isServerCommand(getTrimmedTextFromMessage(message))) {
-                managerService.process(this, getTrimmedTextFromMessage(message));
-            } else {
-
-                //Wysłanie wiadomości do użytkowników na kanale
-                if (currentChannel != null) {
-                    message.setLogin(login);
-                    currentChannel.sendMessageToUsers(message);
-                    currentChannel.saveMessage(login, getTrimmedTextFromMessage(message));
-                } else {
-                    this.sendServerMsg("You need to connect a channel");
-                }
+            //Przejście do managera komend
+            else if (CommandUtils.isServerCommand(TextUtils.getTrimmedText(message))) {
+                managerService.process(this, TextUtils.getTrimmedText(message));
             }
         }
     }
@@ -73,20 +79,12 @@ public class ChatWorker implements Runnable {
         if (message.getMessageType() == MessageType.TEXT) {
             messageWriter.writeTextMessage(message.getLogin() + ": " + message.getText(), message.getLogin());
         } else {
-            FileService.decodeFile(message);
+            messageWriter.writeFile(message);
         }
     }
 
     public void sendServerMsg(String text) {
-        messageWriter.writeTextMessage(text, "Server");
-    }
-
-    public Channel getCurrentChannel() {
-        return currentChannel;
-    }
-
-    public void setCurrentChannel(Channel channel) {
-        this.currentChannel = channel;
+        messageWriter.writeServerMessage(text);
     }
 
     public void leaveCurrentChannel() {
@@ -97,20 +95,19 @@ public class ChatWorker implements Runnable {
         this.sendServerMsg("You left the channel");
     }
 
-    public String getLogin() {
-        return login;
+    private void sendMessageToChannel(Message message) {
+        if (currentChannel != null) {
+            message.setLogin(login);
+            currentChannel.sendMessageToUsers(message);
+        } else {
+            this.sendServerMsg("You need to connect a channel");
+        }
     }
 
-    private boolean isServerCommand(String text) {
-        return text.startsWith("\\\\");
-    }
-
-    private boolean isExitCommand(String text) {
-        return text.endsWith(MainCommands.END_SESSION.getCode());
-    }
-
-    private String getTrimmedTextFromMessage(Message message) {
-        return message.getText().trim();
+    private void saveMessageIfNotAFile(Message message) {
+        if (message.getMessageType() != MessageType.FILE) {
+            currentChannel.saveMessage(login, TextUtils.getTrimmedText(message));
+        }
     }
 
     private void closeSocket() {

@@ -1,8 +1,10 @@
 package it.sosinski.channel;
 
 import it.sosinski.chatworker.ChatWorker;
+import it.sosinski.history.HistoryService;
 import it.sosinski.login.LoginService;
-import it.sosinski.manager.MainCommands;
+import it.sosinski.utils.CommandUtils;
+import it.sosinski.utils.TextUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,27 +19,34 @@ public class ChannelService {
     }
 
     public void process(ChatWorker chatWorker, String text) {
-        if (askForHelp(text)) {
+        if (CommandUtils.isAskingForChannelHelp(text)) {
             printAvailableCommands(chatWorker);
 
-        } else if (askToPrintChannels(text)) {
+        } else if (CommandUtils.isAskingForHistory(text)){
+            printHistory(chatWorker);
+
+        } else if (CommandUtils.isAskingToPrintChannels(text)) {
             printChannelList(chatWorker);
 
-        } else if (askToJoinChannel(text)) {
+        } else if (CommandUtils.isAskingToJoinChannel(text)) {
             joinChannel(chatWorker, text);
 
-        } else if (askToLeaveChannel(text)) {
+        } else if (CommandUtils.isAskingToLeaveChannel(text)) {
             chatWorker.leaveCurrentChannel();
 
-        } else if (askToCreateChannel(text)) {
+        } else if (CommandUtils.isAskingToCreateChannel(text)) {
             Channel createdChannel = createChannel(chatWorker, text);
             chatWorker.setCurrentChannel(createdChannel);
-            chatWorker.sendServerMsg("Server created and you're logged in");
 
-        } else if (askToAllowChatWorkerToChannel(text)) {
+            if (chatWorker.getCurrentChannel() != null) {
+                chatWorker.sendServerMsg("Server created and you're logged in");
+            }
+
+        } else if (CommandUtils.isAskingToAllowChatWorker(text)) {
             allowChatWorkerToChannel(chatWorker, text);
 
-        } else if (askForLoggedChatWorkers(text)) {
+        } else if (CommandUtils.isAskingForLoggedChatWorkers(text)) {
+
             if (isInChannel(chatWorker)) {
                 printLoggedChatWorkers(chatWorker);
             } else {
@@ -50,7 +59,7 @@ public class ChannelService {
     }
 
     private void joinChannel(ChatWorker chatWorker, String text) {
-        String name = getTextFromParentheses(text);
+        String name = TextUtils.getTextFromParentheses(text);
         if (!channelExists(name)) {
             chatWorker.sendServerMsg("No such channel");
             return;
@@ -66,8 +75,9 @@ public class ChannelService {
     }
 
     private Channel createChannel(ChatWorker chatWorker, String text) {
-        String channelName = getTextFromParentheses(text);
-        boolean shouldBePrivate = isPrivateFlag(text);
+        String channelName = TextUtils.getTextFromParentheses(text);
+
+        boolean shouldBePrivate = CommandUtils.hasPrivateFlag(text);
         Channel channel = null;
 
         synchronized (this) {
@@ -94,7 +104,7 @@ public class ChannelService {
         }
 
         Channel currentChannel = chatWorker.getCurrentChannel();
-        String login = getTextFromParentheses(text);
+        String login = TextUtils.getTextFromParentheses(text);
 
         if (!loginService.isLoginFree(login)) {
             chatWorker.sendServerMsg("User with given login doesn't exist");
@@ -110,6 +120,10 @@ public class ChannelService {
 
         currentChannel.allow(chatWorkerToAllow);
         chatWorker.sendServerMsg("User allowed to the channel");
+    }
+
+    private void printHistory(ChatWorker chatWorker) {
+        HistoryService.readHistory(chatWorker);
     }
 
     private void printAvailableCommands(ChatWorker chatWorker) {
@@ -134,48 +148,12 @@ public class ChannelService {
         }
     }
 
-    private boolean isPrivateFlag(String text) {
-        return text.contains("--p");
-    }
-
     private boolean isInChannel(ChatWorker chatWorker) {
         return chatWorker.getCurrentChannel() != null;
     }
 
     private boolean isInPrivateChannel(ChatWorker chatWorker) {
         return chatWorker.getCurrentChannel().isPrivate();
-    }
-
-    private boolean askForLoggedChatWorkers(String text) {
-        return text.contains("--online");
-    }
-
-    private boolean askToLeaveChannel(String text) {
-        return text.contains("--leave");
-    }
-
-    private boolean askToJoinChannel(String text) {
-        return text.contains("--join");
-    }
-
-    private boolean askToCreateChannel(String text) {
-        return text.contains("--create");
-    }
-
-    private boolean askToPrintChannels(String text) {
-        return text.equals(ChannelCommands.PRINT_CHANNELS.getCode());
-    }
-
-    private boolean askToAllowChatWorkerToChannel(String text) {
-        return text.contains("--allow");
-    }
-
-    private boolean askForHelp(String text) {
-        return text.equals(MainCommands.CHANNEL_HELP.getCode());
-    }
-
-    private String getTextFromParentheses(String text) {
-        return text.substring(text.indexOf("\"") + 1, text.lastIndexOf("\""));
     }
 
     private Channel getChannel(String channelName) {

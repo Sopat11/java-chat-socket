@@ -23,7 +23,7 @@ public class MessageWriter {
     }
 
     public void writeTextMessage(String text, String login) {
-        Message msg = new Message(MessageType.TEXT, text, null, login);
+        Message msg = new Message(MessageType.TEXT, text, login);
         try {
             messageWriter.writeObject(msg);
             messageWriter.flush();
@@ -34,12 +34,34 @@ public class MessageWriter {
 
     public void writeFileMessage(String filePath, String login) {
         try {
-            byte[] bytes = Files.readAllBytes(Path.of(filePath));
-            Message message = new Message(MessageType.FILE, "File", bytes, login);
+            Path path = Path.of(filePath);
+            String fileName = path.getFileName().toString();
+
+            byte[] bytes = Files.readAllBytes(path);
+            Message message = new Message(MessageType.FILE, bytes, login, fileName);
             messageWriter.writeObject(message);
             messageWriter.flush();
         } catch (IOException e) {
             log.log(Level.SEVERE, "Reading object failed: " + e.getMessage());
+        }
+    }
+
+    public void writeServerMessage(String text) {
+        Message msg = new Message(MessageType.TEXT, text, "Server");
+        try {
+            messageWriter.writeObject(msg);
+            messageWriter.flush();
+        } catch (IOException e) {
+            log.log(Level.SEVERE, "Sending object failed: " + e.getMessage());
+        }
+    }
+
+    public void writeFile(Message message) {
+        try {
+            messageWriter.writeObject(message);
+            messageWriter.flush();
+        } catch (IOException e) {
+            log.log(Level.SEVERE, "Sending object failed: " + e.getMessage());
         }
     }
 }

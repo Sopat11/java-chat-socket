@@ -2,6 +2,7 @@ package it.sosinski.login;
 
 import it.sosinski.chatworker.ChatWorker;
 import it.sosinski.chatworker.ChatWorkers;
+import it.sosinski.utils.TextUtils;
 
 public class LoginService {
 
@@ -17,7 +18,7 @@ public class LoginService {
             boolean isCorrect;
 
             isFree = isLoginFree(login);
-            isCorrect = isLoginCorrect(login);
+            isCorrect = TextUtils.isLoginCorrect(login);
 
             if (!isFree) {
                 chatWorker.sendServerMsg("Unfortunately this login is taken. Choose another one.");
@@ -38,9 +39,4 @@ public class LoginService {
     public ChatWorker getChatWorkerByLogin(String login) {
         return chatWorkers.getByLogin(login);
     }
-
-    private boolean isLoginCorrect(String login) {
-        return !login.trim().startsWith("\\");
-    }
-
 }
