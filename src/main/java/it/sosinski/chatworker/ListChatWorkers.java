@@ -24,7 +24,7 @@ public class ListChatWorkers implements ChatWorkers {
 
     @Override
     public void broadcast(String fromLogin, String text) {
-        chatWorkers.forEach(chatWorker -> chatWorker.sendMsg(new Message(MessageType.TEXT, text, fromLogin)));
+        chatWorkers.forEach(chatWorker -> chatWorker.sendMsg(new Message(MessageType.TEXT, text,null , fromLogin)));
     }
 
     @Override

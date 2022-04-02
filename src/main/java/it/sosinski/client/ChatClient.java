@@ -1,19 +1,15 @@
 package it.sosinski.client;
 
 import it.sosinski.handler.GlobalExceptionHandler;
-import it.sosinski.messages.ConsoleReader;
-import it.sosinski.messages.MessageReader;
-import it.sosinski.messages.MessageWriter;
+import it.sosinski.messages.*;
 import lombok.extern.java.Log;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.function.Consumer;
 
 @Log
 public class ChatClient {
 
-    private final Consumer<String> onText;
     private final Runnable readFromSocket;
     private final Runnable readFromConsole;
     private final MessageWriter messageWriter;
@@ -22,11 +18,11 @@ public class ChatClient {
         Socket socket = new Socket(host, port);
 
         messageWriter = new MessageWriter(socket);
-        onText = message -> messageWriter.writeMessage(message, "Server");
-        readFromSocket =  () -> new MessageReader(socket, x -> System.out.println(x.getText()), () -> {
+
+        readFromSocket = () -> new MessageReader(socket, this::onMessage, () -> {
         }).read();
 
-        readFromConsole = () -> new ConsoleReader(System.in, onText).read();
+        readFromConsole = () -> new ConsoleReader(System.in, this::writeMessage).read();
     }
 
     public static void main(String[] args) throws IOException {
@@ -41,5 +37,30 @@ public class ChatClient {
         Thread consoleMessageReader = new Thread(readFromConsole);
         consoleMessageReader.setDaemon(true);
         consoleMessageReader.start();
+    }
+
+    private void writeMessage(String text) {
+        if (!isFileSending(text)) {
+            messageWriter.writeTextMessage(text, "Server2");
+        } else {
+            System.out.println("Writing file message");
+            messageWriter.writeFileMessage(getPathFromText(text), "Server");
+        }
+    }
+
+    private void onMessage(Message message) {
+        if (message.getMessageType() == MessageType.TEXT) {
+            System.out.println(message.getText());
+        } else {
+            System.out.println("FILE RECEIVED");
+        }
+    }
+
+    private boolean isFileSending(String text) {
+        return text.trim().startsWith("\\\\f");
+    }
+
+    private String getPathFromText(String text) {
+        return text.substring(text.indexOf("\"") + 1, text.lastIndexOf("\""));
     }
 }
