@@ -30,7 +30,9 @@ public class Channel {
     }
 
     public void disconnectUser(ChatWorker chatWorker) {
+        lock.writeLock().lock();
         loggedChatWorkers.remove(chatWorker);
+        lock.writeLock().unlock();
 
         lock.readLock().lock();
         loggedChatWorkers.forEach(chw -> chw.sendServerMsg(chatWorker.getLogin() + " left the channel"));
@@ -51,20 +53,27 @@ public class Channel {
     public boolean isAllowed(ChatWorker chatWorker) {
         lock.readLock().lock();
         boolean allowed = allowedChatWorkers.contains(chatWorker);
-        lock.readLock().lock();
+        lock.readLock().unlock();
         return allowed;
     }
 
     public void allow(ChatWorker chatWorker) {
+        lock.writeLock().lock();
         allowedChatWorkers.add(chatWorker);
+        lock.writeLock().unlock();
     }
 
     List<ChatWorker> getLoggedChatWorkers() {
+        lock.readLock().lock();
+        List<ChatWorker> loggedChatWorkers = this.loggedChatWorkers;
+        lock.readLock().unlock();
         return loggedChatWorkers;
     }
 
     void connectUser(ChatWorker chatWorker) {
+        lock.writeLock().lock();
         loggedChatWorkers.add(chatWorker);
+        lock.writeLock().unlock();
     }
 
     @Override

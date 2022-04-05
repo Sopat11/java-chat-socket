@@ -12,22 +12,19 @@ public class LoginService {
         this.chatWorkers = chatWorkers;
     }
 
-    public String readChatWorkerLogin(ChatWorker chatWorker, String login) {
+    public synchronized String readChatWorkerLogin(ChatWorker chatWorker, String login) {
 
-            boolean isFree;
-            boolean isCorrect;
+        boolean isFree = isLoginFree(login);
+        boolean isCorrect = TextUtils.isLoginCorrect(login);
 
-            isFree = isLoginFree(login);
-            isCorrect = TextUtils.isLoginCorrect(login);
-
-            if (!isFree) {
-                chatWorker.sendServerMsg("Unfortunately this login is taken. Choose another one.");
-                return null;
-            } else if (!isCorrect) {
-                chatWorker.sendServerMsg("Login can't start with \\. Choose another one.");
-                return null;
-            }
-            chatWorker.sendServerMsg("Successfully logged in");
+        if (!isFree) {
+            chatWorker.sendServerMsg("Unfortunately this login is taken. Choose another one.");
+            return null;
+        } else if (!isCorrect) {
+            chatWorker.sendServerMsg("Login can't start with \\. Choose another one.");
+            return null;
+        }
+        chatWorker.sendServerMsg("Successfully logged in");
 
         return login;
     }

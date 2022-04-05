@@ -91,8 +91,8 @@ public class ChatWorker implements Runnable {
         if (currentChannel != null) {
             currentChannel.disconnectUser(this);
             this.currentChannel = null;
+            this.sendServerMsg("You left the channel");
         }
-        this.sendServerMsg("You left the channel");
     }
 
     private void sendMessageToChannel(Message message) {

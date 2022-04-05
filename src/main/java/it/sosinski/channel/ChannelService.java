@@ -22,7 +22,7 @@ public class ChannelService {
         if (CommandUtils.isAskingForChannelHelp(text)) {
             printAvailableCommands(chatWorker);
 
-        } else if (CommandUtils.isAskingForHistory(text)){
+        } else if (CommandUtils.isAskingForHistory(text)) {
             printHistory(chatWorker);
 
         } else if (CommandUtils.isAskingToPrintChannels(text)) {
@@ -36,6 +36,7 @@ public class ChannelService {
 
         } else if (CommandUtils.isAskingToCreateChannel(text)) {
             Channel createdChannel = createChannel(chatWorker, text);
+            leaveCurrentChannelIfExists(chatWorker);
             chatWorker.setCurrentChannel(createdChannel);
 
             if (chatWorker.getCurrentChannel() != null) {
@@ -59,6 +60,11 @@ public class ChannelService {
     }
 
     private void joinChannel(ChatWorker chatWorker, String text) {
+        if (!TextUtils.hasTwoParentheses(text)) {
+            chatWorker.sendServerMsg("No such command");
+            return;
+        }
+
         String name = TextUtils.getTextFromParentheses(text);
         if (!channelExists(name)) {
             chatWorker.sendServerMsg("No such channel");
@@ -75,6 +81,11 @@ public class ChannelService {
     }
 
     private Channel createChannel(ChatWorker chatWorker, String text) {
+        if (!TextUtils.hasTwoParentheses(text)) {
+            chatWorker.sendServerMsg("No such command");
+            return null;
+        }
+
         String channelName = TextUtils.getTextFromParentheses(text);
 
         boolean shouldBePrivate = CommandUtils.hasPrivateFlag(text);
@@ -104,9 +115,15 @@ public class ChannelService {
         }
 
         Channel currentChannel = chatWorker.getCurrentChannel();
+
+        if (!TextUtils.hasTwoParentheses(text)) {
+            chatWorker.sendServerMsg("No such command");
+            return;
+        }
+
         String login = TextUtils.getTextFromParentheses(text);
 
-        if (!loginService.isLoginFree(login)) {
+        if (loginService.isLoginFree(login)) {
             chatWorker.sendServerMsg("User with given login doesn't exist");
             return;
         }
@@ -120,6 +137,10 @@ public class ChannelService {
 
         currentChannel.allow(chatWorkerToAllow);
         chatWorker.sendServerMsg("User allowed to the channel");
+    }
+
+    private void leaveCurrentChannelIfExists(ChatWorker chatWorker) {
+        chatWorker.leaveCurrentChannel();
     }
 
     private void printHistory(ChatWorker chatWorker) {
