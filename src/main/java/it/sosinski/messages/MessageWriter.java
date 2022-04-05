@@ -5,8 +5,6 @@ import lombok.extern.java.Log;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.logging.Level;
 
 @Log
@@ -32,17 +30,13 @@ public class MessageWriter {
         }
     }
 
-    public void writeFileMessage(String filePath, String login) {
+    public void writeFile(Message message) {
         try {
-            Path path = Path.of(filePath);
-            String fileName = path.getFileName().toString();
-
-            byte[] bytes = Files.readAllBytes(path);
-            Message message = new Message(MessageType.FILE, bytes, login, fileName);
+            log.log(Level.INFO, "writeFile()");
             messageWriter.writeObject(message);
             messageWriter.flush();
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Reading object failed: " + e.getMessage());
+            log.log(Level.SEVERE, "Sending object failed: " + e.getMessage());
         }
     }
 
@@ -50,15 +44,6 @@ public class MessageWriter {
         Message msg = new Message(MessageType.TEXT, text, "Server");
         try {
             messageWriter.writeObject(msg);
-            messageWriter.flush();
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "Sending object failed: " + e.getMessage());
-        }
-    }
-
-    public void writeFile(Message message) {
-        try {
-            messageWriter.writeObject(message);
             messageWriter.flush();
         } catch (IOException e) {
             log.log(Level.SEVERE, "Sending object failed: " + e.getMessage());
