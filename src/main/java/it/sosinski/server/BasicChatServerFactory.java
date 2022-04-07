@@ -1,6 +1,9 @@
 package it.sosinski.server;
 
 import it.sosinski.channel.ChannelService;
+import it.sosinski.channel.Channels;
+import it.sosinski.channel.ListChannel;
+import it.sosinski.channel.SynchronizedChannels;
 import it.sosinski.chatworker.ChatWorkers;
 import it.sosinski.chatworker.ListChatWorkers;
 import it.sosinski.chatworker.SynchronizedChatWorkersProxy;
@@ -18,13 +21,18 @@ public class BasicChatServerFactory implements ChatServerFactory {
     }
 
     @Override
+    public Channels createChannels() {
+        return new SynchronizedChannels(new ListChannel());
+    }
+
+    @Override
     public ExecutorService createExecutorService() {
         return Executors.newFixedThreadPool(1024);
     }
 
     @Override
     public ManagerService createManagerService(LoginService loginService) {
-        return new ManagerService(new ChannelService(loginService), loginService);
+        return new ManagerService(new ChannelService(createChannels(), loginService), loginService);
     }
 
     @Override

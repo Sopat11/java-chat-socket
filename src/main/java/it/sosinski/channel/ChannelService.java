@@ -6,15 +6,17 @@ import it.sosinski.login.LoginService;
 import it.sosinski.utils.CommandUtils;
 import it.sosinski.utils.TextUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ChannelService {
 
-    private final List<Channel> channels = new ArrayList<>();
+    private final Object createMonitor = new Object();
+    private final Object allowMonitor = new Object();
+    private final Channels channels;
     private final LoginService loginService;
 
-    public ChannelService(LoginService loginService) {
+    public ChannelService(Channels channels, LoginService loginService) {
+        this.channels = channels;
         this.loginService = loginService;
     }
 
@@ -91,7 +93,7 @@ public class ChannelService {
         boolean shouldBePrivate = CommandUtils.hasPrivateFlag(text);
         Channel channel = null;
 
-        synchronized (this) {
+        synchronized (createMonitor) {
             if (!channelExists(channelName)) {
                 channel = new Channel(chatWorker, channelName, shouldBePrivate);
                 channels.add(channel);
@@ -130,13 +132,15 @@ public class ChannelService {
 
         ChatWorker chatWorkerToAllow = loginService.getChatWorkerByLogin(login);
 
-        if (currentChannel.isAllowed(chatWorkerToAllow)) {
-            chatWorker.sendServerMsg("User is already allowed to the channel");
-            return;
-        }
+        synchronized (allowMonitor){
+            if (currentChannel.isAllowed(chatWorkerToAllow)) {
+                chatWorker.sendServerMsg("User is already allowed to the channel");
+                return;
+            }
 
-        currentChannel.allow(chatWorkerToAllow);
-        chatWorker.sendServerMsg("User allowed to the channel");
+            currentChannel.allow(chatWorkerToAllow);
+            chatWorker.sendServerMsg("User allowed to the channel");
+        }
     }
 
     private void leaveCurrentChannelIfExists(ChatWorker chatWorker) {
@@ -154,10 +158,10 @@ public class ChannelService {
     }
 
     private void printChannelList(ChatWorker chatWorker) {
-        if (channels.size() == 0) {
+        if (channels.getSize() == 0) {
             chatWorker.sendServerMsg("No available channels");
         } else {
-            channels.forEach(ch -> chatWorker.sendServerMsg(ch.toString()));
+            channels.getChannels().forEach(ch -> chatWorker.sendServerMsg(ch.toString()));
         }
     }
 
@@ -178,11 +182,11 @@ public class ChannelService {
     }
 
     private Channel getChannel(String channelName) {
-        return channels.stream().filter(x -> x.getName().equals(channelName)).findFirst().get();
+        return channels.get(channelName);
     }
 
     private boolean channelExists(String channelName) {
-        return channels.stream().anyMatch(x -> x.getName().equals(channelName));
+        return channels.exists(channelName);
     }
 
 }
