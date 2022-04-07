@@ -45,7 +45,12 @@ public class ChatClient {
 
     private void writeMessage(String text) {
         if (CommandUtils.isFileSending(text)) {
-            printInfoIfMissingParentheses(text);
+
+            if (!TextUtils.hasTwoParentheses(text)) {
+                printInfoMissingPath();
+                return;
+            }
+
             String path = TextUtils.getTextFromParentheses(text);
             Message message = FileService.encodeFile(path, "Server");
             messageWriter.writeFile(message);
@@ -63,10 +68,8 @@ public class ChatClient {
         }
     }
 
-    private void printInfoIfMissingParentheses(String text) {
-        if (!TextUtils.hasTwoParentheses(text)) {
-            messageWriter.writeServerMessage("No such command");
-        }
+    private void printInfoMissingPath() {
+        messageWriter.writeServerMessage("Missing file path");
     }
 
 }

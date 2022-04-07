@@ -32,7 +32,6 @@ public class MessageWriter {
 
     public void writeFile(Message message) {
         try {
-            log.log(Level.INFO, "writeFile()");
             messageWriter.writeObject(message);
             messageWriter.flush();
         } catch (IOException e) {
