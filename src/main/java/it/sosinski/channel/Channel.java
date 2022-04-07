@@ -45,8 +45,7 @@ public class Channel {
         lock.readLock().unlock();
     }
 
-    public void saveMessage(String login, String text) {
-        String message = String.format("%s : %s", login, text);
+    public void saveMessage(String message) {
         HistoryService.saveMessageToTxtFile(message, this);
     }
 

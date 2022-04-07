@@ -4,6 +4,7 @@ import it.sosinski.files.FileService;
 import it.sosinski.handler.GlobalExceptionHandler;
 import it.sosinski.messages.*;
 import it.sosinski.utils.CommandUtils;
+import it.sosinski.utils.MessageUtils;
 import it.sosinski.utils.TextUtils;
 import lombok.extern.java.Log;
 
@@ -54,7 +55,7 @@ public class ChatClient {
     }
 
     private void onMessage(Message message) {
-        if (message.getMessageType() == MessageType.TEXT) {
+        if (MessageUtils.isTextMessage(message)) {
             System.out.println(message.getText());
         } else {
             System.out.println(message.getLogin() + " sent a file: " + message.getFileName());

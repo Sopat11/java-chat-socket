@@ -4,9 +4,10 @@ import it.sosinski.channel.Channel;
 import it.sosinski.manager.ManagerService;
 import it.sosinski.messages.Message;
 import it.sosinski.messages.MessageReader;
-import it.sosinski.messages.MessageType;
 import it.sosinski.messages.MessageWriter;
 import it.sosinski.utils.CommandUtils;
+import it.sosinski.utils.MessageFormatter;
+import it.sosinski.utils.MessageUtils;
 import it.sosinski.utils.TextUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -55,7 +56,7 @@ public class ChatWorker implements Runnable {
             //Wysłanie wiadomości do użytkowników na kanale
             if (!CommandUtils.isServerCommand(message.getText())) {
                 sendMessageToChannel(message);
-                saveMessageIfNotAFile(message);
+                saveMessageIfTextType(message);
             }
 
             // Zamknięcie aplikacji
@@ -76,8 +77,9 @@ public class ChatWorker implements Runnable {
     }
 
     public void sendMsg(Message message) {
-        if (message.getMessageType() == MessageType.TEXT) {
-            messageWriter.writeTextMessage(message.getLogin() + ": " + message.getText(), message.getLogin());
+        if (MessageUtils.isTextMessage(message)) {
+//            messageWriter.writeTextMessage(message.getLogin() + ": " + message.getText(), message.getLogin());
+            messageWriter.writeTextMessage(MessageFormatter.formatMessageStandard(message), message.getLogin());
         } else {
             messageWriter.writeFile(message);
         }
@@ -88,7 +90,7 @@ public class ChatWorker implements Runnable {
     }
 
     public void leaveCurrentChannel() {
-        if (currentChannel != null) {
+        if (isOnChannel()) {
             currentChannel.disconnectUser(this);
             this.currentChannel = null;
             this.sendServerMsg("You left the channel");
@@ -96,7 +98,7 @@ public class ChatWorker implements Runnable {
     }
 
     private void sendMessageToChannel(Message message) {
-        if (currentChannel != null) {
+        if (isOnChannel()) {
             message.setLogin(login);
             currentChannel.sendMessageToUsers(message);
         } else {
@@ -104,10 +106,14 @@ public class ChatWorker implements Runnable {
         }
     }
 
-    private void saveMessageIfNotAFile(Message message) {
-        if (message.getMessageType() != MessageType.FILE) {
-            currentChannel.saveMessage(login, TextUtils.getTrimmedText(message));
+    private void saveMessageIfTextType(Message message) {
+        if (MessageUtils.isTextMessage(message) && isOnChannel()) {
+            currentChannel.saveMessage(MessageFormatter.formatMessageStandard(message));
         }
+    }
+
+    private boolean isOnChannel() {
+        return currentChannel != null;
     }
 
     private void closeSocket() {
