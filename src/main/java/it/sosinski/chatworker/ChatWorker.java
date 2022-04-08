@@ -78,7 +78,6 @@ public class ChatWorker implements Runnable {
 
     public void sendMsg(Message message) {
         if (MessageUtils.isTextMessage(message)) {
-//            messageWriter.writeTextMessage(message.getLogin() + ": " + message.getText(), message.getLogin());
             messageWriter.writeTextMessage(MessageFormatter.formatMessageStandard(message), message.getLogin());
         } else {
             messageWriter.writeFile(message);
