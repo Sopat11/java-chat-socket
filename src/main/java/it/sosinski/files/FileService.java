@@ -37,7 +37,7 @@ public class FileService {
             try {
                 bytes = Files.readAllBytes(path);
             } catch (IOException e) {
-                log.log(Level.SEVERE, "Reading file failed: " + e.getMessage());
+                log.log(Level.SEVERE, "Writing file failed: " + e.getMessage());
             }
             return new Message(MessageType.FILE, bytes, login, fileName);
         });
@@ -46,7 +46,7 @@ public class FileService {
         try {
             message = completableFuture.get();
         } catch (InterruptedException | ExecutionException e) {
-            log.log(Level.SEVERE, "Reading file failed: " + e.getMessage());
+            log.log(Level.SEVERE, "Writing file failed: " + e.getMessage());
         }
 
         return message;

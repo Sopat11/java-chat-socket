@@ -8,4 +8,8 @@ public class MessageUtils {
     public static boolean isTextMessage(Message message) {
         return message.getMessageType() == MessageType.TEXT;
     }
+
+    public static boolean hasFile(Message message) {
+        return message.getFileBytes().length > 0;
+    }
 }

@@ -63,8 +63,10 @@ public class ChatClient {
         if (MessageUtils.isTextMessage(message)) {
             System.out.println(message.getText());
         } else {
-            System.out.println(message.getLogin() + " sent a file: " + message.getFileName());
-            FileService.decodeFile(message);
+            if (MessageUtils.hasFile(message)) {
+                System.out.println(message.getLogin() + " sent a file: " + message.getFileName());
+                FileService.decodeFile(message);
+            }
         }
     }
 
