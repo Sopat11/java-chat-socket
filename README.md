@@ -1,35 +1,28 @@
-# Java chat socket
-Java chat socket to aplikacja, która dzięki użyciu socketów umożliwia komunikowanie się użytkowników między sobą.
+
+# Rest Java EE Chat
+
+Rest Java EE Chat to aplikacja, która dzięki użyciu Javy EE umożliwia komunikowanie się użytkowników między sobą.
 
 # Uruchomienie
-1. Serwer można uruchomić dzięki klasie **ChatServer**. Jako parametr uruchomieniowy należy podać *port*, na którym serwer będzie nasłuchiwał.
+1. Serwer uruchamiany jest przy użyciu serwera JBoss/WildFly
 
-3. Klientów można uruchomić dzięki klasie **ChatClient**. Jako parametry uruchomieniowe należy podać odpowiednio:
-- IP serwera
-- PORT serwera
+2. Klientów można uruchomić dzięki klasie **Client**. Jako parametr uruchomieniowe należy podać:
+- nazwę użytkownika
 
 # Komendy
 
-***Komendy ogólne:***
-|  Komenda| Działanie |
-|--|--|
-| \\\h   | Wyświetlenie dostępnych komend |
-| \\\quit| Zamknięcie aplikacji |
-
-<br></br>
 ***Komendy dotyczące kanałów:***
     					    
 |  Komenda| Działanie |
 |--|--|
-| \\\c   | Wyświetlenie komend dotyczących kanałów |
-| \\\c --channels | Wyświetlenie dostępnych kanałów |
-| \\\c --join "CHANNEL_NAME" | Dołączenie do kanału |
-| \\\c --create "CHANNEL_NAME" | Utworzenie kanału publicznego |
-| \\\c --create --p "CHANNEL_NAME" | Utworzenie kanału prywatnego |
-| \\\c --online | Wyświetlenie użytkowników dostępnych na kanale |
-| \\\c --leave | Opuszczenie obecnego kanału |
-| \\\c --history | Wyświetlenie historii kanału |
-| \\\f "FILE_PATH" | Wysłanie pliku do uczestników kanału |
+| cht --channels | Wyświetlenie dostępnych kanałów |
+| cht --join "CHANNEL_ID" | Dołączenie do kanału |
+| cht --create "CHANNEL_NAME" | Utworzenie kanału publicznego |
+| cht --create --p "CHANNEL_NAME" | Utworzenie kanału prywatnego |
+| cht --online | Wyświetlenie użytkowników dostępnych na kanale |
+| cht --leave | Opuszczenie obecnego kanału |
+| cht --history | Wyświetlenie historii kanału |
+| \\f "FILE_PATH" | Wysłanie pliku do uczestników kanału |
 
     
 # Komentarz do zadań
@@ -43,7 +36,7 @@ Java chat socket to aplikacja, która dzięki użyciu socketów umożliwia komun
 - *Funkcjonalność ta jest możliwa, gdy użytkownik znajduje się na dowolnym kanale i użyje odpowiedniej komendy (tabelka powyżej)*
 
 **4. Zapamiętywanie historii rozmów po stronie serwera**
-- *Rozmowy są na bieżąco zapisywane przez serwer w pliku .txt, którego nazwą jest nazwa danego kanału*
+- *Rozmowy są na bieżąco zapisywane przez serwer w bazie danych*
 
 **5. Możliwość przeglądania historii rozmów z poziomu klienta**
 - *Użytkownik może sprawdzić historię rozmów. Aby to zrobić, musi on znajdować się na dowolnym kanale i wpisać odpowiednią komendę (tabelka powyżej). W wyniku dostanie historię rozmów z danego kanału.*
